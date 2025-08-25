@@ -1,0 +1,11 @@
+VIEW MyService_Items AS SELECT
+  Items_0.ItemId,
+  Items_0.Order_OrderId,
+  Items_0.Product_ProductId,
+  Items_0.Quantity,
+  Items_0.notes
+FROM com_studyproject_Items AS Items_0
+WITH ASSOCIATIONS (
+  MANY TO ONE JOIN MyService_Orders AS "ORDER" ON ("ORDER".OrderId = Order_OrderId),
+  MANY TO ONE JOIN MyService_Products AS "PRODUCT" ON ("PRODUCT".ProductId = Product_ProductId)
+)

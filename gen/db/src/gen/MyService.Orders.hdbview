@@ -1,0 +1,7 @@
+VIEW MyService_Orders AS SELECT
+  Orders_0.OrderId,
+  Orders_0.shippingAddress
+FROM com_studyproject_Orders AS Orders_0
+WITH ASSOCIATIONS (
+  MANY TO MANY JOIN MyService_Items AS OrderItems ON (OrderItems.Order_OrderId = OrderId)
+)

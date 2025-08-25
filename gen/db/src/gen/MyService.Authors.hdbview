@@ -1,0 +1,6 @@
+VIEW MyService_Authors AS SELECT
+  Authors_0.AuthoursId,
+  Authors_0.Name,
+  Authors_0.Age,
+  Authors_0.Address
+FROM com_studyproject_Authors AS Authors_0

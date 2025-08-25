@@ -62,18 +62,15 @@ POST http://localhost:4004/odata/v4/my/processOrderWithStockUpdate
 Content-Type: application/json
 
 {
-  "shippingAddress": "123 Main St, San Francisco, CA",
-  "OrderItems": [
-    {
-      "Product_ProductId": "eb1048ca-9660-4a31-b70a-a5f70c4b6c45",
-      "Quantity": 2,
-      "notes": "Express delivery requested"
-    }
-  ]
+  "shippingAddress": "123 Main St, San Francisco, CA"
 }
 
 ### Check Product Stock After Order 
 GET http://localhost:4004/odata/v4/my/Products('eb1048ca-9660-4a31-b70a-a5f70c4b6c45')
+Accept: application/json
+
+### Check warehouse Stock After Order 
+GET http://localhost:4004/odata/v4/my/WarehouseStock
 Accept: application/json
 
 ### This should fail and rollback all operations (we have insufficient stock and products)
@@ -155,4 +152,17 @@ Content-Type: application/json
 
 {
   "AuthoursId": "86638160-15a0-474d-95df-49fff566c63f"
+}
+
+
+###send order email
+POST http://localhost:4004/odata/v4/my/sendOrderConfirmationEmail
+Content-Type: application/json
+
+{
+  "OrderNumber": "c942f684-219d-4786-b3bc-d2d4e4602384",
+  "CustomerName": "Kevin Nyiringango", 
+  "CustomerEmail": "musiric2@gmail.com",
+  "EmailNotificationFlag": true,
+  "OrderTrackingNumber": "3424"
 }

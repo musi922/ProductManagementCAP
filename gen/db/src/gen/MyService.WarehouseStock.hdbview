@@ -1,0 +1,10 @@
+VIEW MyService_WarehouseStock AS SELECT
+  WarehouseStock_0.StockId,
+  WarehouseStock_0.Product_ProductId,
+  WarehouseStock_0.Category,
+  WarehouseStock_0.CurrentStock,
+  WarehouseStock_0.Location
+FROM com_studyproject_WarehouseStock AS WarehouseStock_0
+WITH ASSOCIATIONS (
+  MANY TO ONE JOIN MyService_Products AS "PRODUCT" ON ("PRODUCT".ProductId = Product_ProductId)
+)

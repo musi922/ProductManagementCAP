@@ -1,0 +1,11 @@
+COLUMN TABLE com_studyproject_Items (
+  ItemId NVARCHAR(36) NOT NULL,
+  Order_OrderId NVARCHAR(36),
+  Product_ProductId NVARCHAR(36),
+  Quantity INTEGER,
+  notes NVARCHAR(1000),
+  PRIMARY KEY(ItemId)
+) WITH ASSOCIATIONS (
+  MANY TO ONE JOIN com_studyproject_Orders AS "ORDER" ON ("ORDER".OrderId = Order_OrderId),
+  MANY TO ONE JOIN com_studyproject_Products AS "PRODUCT" ON ("PRODUCT".ProductId = Product_ProductId)
+)

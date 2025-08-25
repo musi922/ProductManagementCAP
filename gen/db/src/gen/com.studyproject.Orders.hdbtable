@@ -1,0 +1,7 @@
+COLUMN TABLE com_studyproject_Orders (
+  OrderId NVARCHAR(36) NOT NULL,
+  shippingAddress NVARCHAR(1000),
+  PRIMARY KEY(OrderId)
+) WITH ASSOCIATIONS (
+  MANY TO MANY JOIN com_studyproject_Items AS OrderItems ON (OrderItems.Order_OrderId = OrderId)
+)

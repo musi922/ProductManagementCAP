@@ -53,9 +53,7 @@ service MyService {
         Age: Int32,
         Address: String(40)
     ) returns {
-        message: String;
-        Authors;
-    };
+        message: String;    };
 
     action updateAuthor(
         AuthoursId: UUID,
@@ -64,11 +62,20 @@ service MyService {
         Address: String(40)
     ) returns {
         message: String;
-        Authors;
     };
     action deleteAuthor(
         AuthoursId: UUID,
     ) returns {
         message: String;
     };
+        action sendOrderConfirmationEmail (
+        OrderNumber: String,
+        CustomerEmail: String,
+        CustomerName: String,
+        EmailNotificationFlag: Boolean,
+        OrderTrackingNumber: String
+
+    ) returns {
+        message: String;
+    }
 }

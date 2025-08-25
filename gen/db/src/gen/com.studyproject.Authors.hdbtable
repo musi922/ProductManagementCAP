@@ -1,0 +1,7 @@
+COLUMN TABLE com_studyproject_Authors (
+  AuthoursId NVARCHAR(36) NOT NULL,
+  Name NVARCHAR(40),
+  Age INTEGER,
+  Address NVARCHAR(40),
+  PRIMARY KEY(AuthoursId)
+)

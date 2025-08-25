@@ -1,2 +1,1 @@
-# ProductManagementCAP
 # EmailConfirmationOrder

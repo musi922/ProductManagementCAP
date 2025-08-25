@@ -1,0 +1,15 @@
+VIEW MyService_Products AS SELECT
+  Products_0.ProductId,
+  Products_0.ProductName,
+  Products_0.Category,
+  Products_0.Manufacturer,
+  Products_0.Quantity,
+  Products_0.Price,
+  Products_0.Currency,
+  Products_0.Color,
+  Products_0.Location,
+  Products_0.Description
+FROM com_studyproject_Products AS Products_0
+WITH ASSOCIATIONS (
+  MANY TO MANY JOIN MyService_Items AS OrderItems ON (OrderItems.Product_ProductId = ProductId)
+)
