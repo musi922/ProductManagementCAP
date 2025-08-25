@@ -12,40 +12,46 @@ class MyService extends cds.ApplicationService {
         this.on("createAuthor", this.#createAuthor);
         this.on("updateAuthor", this.#updateAuthor);
         this.on("deleteAuthor", this.#deleteAuthor);
-        
+
         this.on("sendOrderConfirmationEmail", this.#sendOrderConfirmationEmail);
-        
+
         await super.init();
     }
 
-async #sendOrderConfirmationEmail(req) {
-    const { OrderNumber, CustomerName, CustomerEmail, EmailNotificationFlag, OrderTrackingNumber } = req.data;
-    const axios = require('axios');
-    
-    try {
-        if (!OrderNumber) {
-            return req.error(400, "OrderNumber is required");
-        }
+    async #sendOrderConfirmationEmail(req) {
+        const { OrderNumber, CustomerName, CustomerEmail, EmailNotificationFlag, OrderTrackingNumber } = req.data;
+        const axios = require('axios');
 
-        // Get OAuth2 token inline
-        const tokenUrl = 'https://924b88d5trial.authentication.us10.hana.ondemand.com/oauth/token';
-        const clientId = 'sb-1a77c837-ac48-4a56-91f7-d0d09a0c5872!b499548|it-rt-924b88d5trial!b26655';
-        const clientSecret = '62e2cece-4d2e-4c7a-87b8-db7c9d0d0bd1$RaXcAdY85AO0BZOGBDK0w4Mznv5F5ot7RmBXC87azSM=';
-        
-        const tokenResponse = await axios.post(tokenUrl, 
-            'grant_type=client_credentials', 
-            {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`
-                }
+        try {
+            if (!OrderNumber) {
+                return req.error(400, "OrderNumber is required");
             }
-        );
+            const existingOrder = await SELECT.one.from('Orders').where({ OrderId: OrderNumber });
+            if (!existingOrder) {
+                return req.error(404, `Order with ID ${OrderNumber} does not exist`);
+            }
 
-        const accessToken = tokenResponse.data.access_token;
+            console.log('Order validated:', existingOrder);
 
-        // Prepare XML payload for CPI
-        const xmlPayload = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cxf="http://cxf.component.camel.apache.org/">
+            // Get OAuth2 token inline
+            const tokenUrl = 'https://924b88d5trial.authentication.us10.hana.ondemand.com/oauth/token';
+            const clientId = 'sb-1a77c837-ac48-4a56-91f7-d0d09a0c5872!b499548|it-rt-924b88d5trial!b26655';
+            const clientSecret = '62e2cece-4d2e-4c7a-87b8-db7c9d0d0bd1$RaXcAdY85AO0BZOGBDK0w4Mznv5F5ot7RmBXC87azSM=';
+
+            const tokenResponse = await axios.post(tokenUrl,
+                'grant_type=client_credentials',
+                {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`
+                    }
+                }
+            );
+
+            const accessToken = tokenResponse.data.access_token;
+
+            // Prepare XML payload for CPI
+            const xmlPayload = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cxf="http://cxf.component.camel.apache.org/">
             <soapenv:Header/>
             <soapenv:Body>
                 <OrderDetails>
@@ -58,35 +64,35 @@ async #sendOrderConfirmationEmail(req) {
             </soapenv:Body>
         </soapenv:Envelope>`;
 
-        console.log('Calling CPI service with XML payload:', xmlPayload);
+            console.log('Calling CPI service with XML payload:', xmlPayload);
 
-        // Call CPI service with axios (sending XML)
-        const cpiResponse = await axios.post(
-            'https://924b88d5trial.it-cpitrial05-rt.cfapps.us10-001.hana.ondemand.com/cxf/sendOrderStatus',
-            xmlPayload,
-            {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Content-Type': 'application/xml',
-                    'SOAPAction': ''
+            // Call CPI service with axios (sending XML)
+            const cpiResponse = await axios.post(
+                'https://924b88d5trial.it-cpitrial05-rt.cfapps.us10-001.hana.ondemand.com/cxf/sendOrderStatus',
+                xmlPayload,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/xml',
+                        'SOAPAction': ''
+                    }
                 }
-            }
-        );
-        
-        console.log('CPI service response:', cpiResponse.data);
-        
-        return {
-            message: "Order confirmation email sent successfully",
-            OrderNumber: OrderNumber,
-            emailStatus: "sent",
-            cpiResponse: cpiResponse.data
-        };
-        
-    } catch (error) {
-        console.error('Failed to send order confirmation:', error.response?.data || error.message);
-        return req.error(500, `Failed to send order confirmation: ${error.message}`);
+            );
+
+            console.log('CPI service response:', cpiResponse.data);
+
+            return {
+                message: "Order confirmation email sent successfully",
+                OrderNumber: OrderNumber,
+                emailStatus: "sent",
+                cpiResponse: cpiResponse.data
+            };
+
+        } catch (error) {
+            console.error('Failed to send order confirmation:', error.response?.data || error.message);
+            return req.error(500, `Failed to send order confirmation: ${error.message}`);
+        }
     }
-}
     async #processOrderWithStockUpdate(req) {
         const { shippingAddress, OrderItems, customerName, customerEmail } = req.data;
 
@@ -295,7 +301,7 @@ async #sendOrderConfirmationEmail(req) {
         const { Name, Age, Address } = req.data;
         if (!Name) return req.error(400, "ERROR_NAME_IS_REQUIRED");
         if (!Age) return req.error(400, "ERROR_AGE_IS_REQUIRED");
-        
+
         const author = await INSERT.into('Authors').entries({ Name, Age, Address });
         return await SELECT.one.from('Authors').where({ AuthoursId: author.AuthoursId });
     }
@@ -303,23 +309,23 @@ async #sendOrderConfirmationEmail(req) {
     async #updateAuthor(req) {
         const { AuthoursId, Name, Age, Address } = req.data;
         if (!AuthoursId) return req.error(400, "Error_AuthoursId_is_required");
-        
+
         const existingAuthor = await SELECT.one.from('Authors').where({ AuthoursId });
         if (!existingAuthor) return req.error(404, "Author not found");
 
         await UPDATE('Authors').set({ Name, Age, Address }).where({ AuthoursId });
         const updatedAuthor = await SELECT.one.from('Authors').where({ AuthoursId });
 
-        return { 
-            message: "Author updated successfully", 
-            Authors: updatedAuthor 
+        return {
+            message: "Author updated successfully",
+            Authors: updatedAuthor
         };
     }
 
     async #deleteAuthor(req) {
         const { AuthoursId } = req.data;
         if (!AuthoursId) return req.error(400, "Error_AuthoursId_is_required");
-        
+
         await DELETE.from('Authors').where({ AuthoursId });
         return { message: "Author Deleted Successfully" };
     }
